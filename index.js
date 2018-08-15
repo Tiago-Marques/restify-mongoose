@@ -6,6 +6,12 @@ const util = require('util');
 const url = require('url');
 const EventEmitter = require('events').EventEmitter;
 
+/**
+ * @todo Write the documentation.
+ * 
+ * @param {Error} err - The Error object
+ * @returns {Error}
+ */
 const restifyError = function (err) {
 
   if ('ValidationError' !== err.name) {
@@ -23,6 +29,12 @@ const restifyError = function (err) {
   return returnError;
 };
 
+/**
+ * @todo Write the documentation.
+ * 
+ * @param {self} self - The self reference
+ * @param {Event} event - The event name
+ */
 const emitEvent = function (self, event) {
   return function (model, cb) {
     self.emit(event, model);
@@ -33,6 +45,14 @@ const emitEvent = function (self, event) {
   };
 };
 
+/**
+ * @todo Write the documentation.
+ * 
+ * @param {Object} res - The res object
+ * @param {string} format - The format
+ * @param {string} modelName - Model name
+ * @param {number} status - The http response status
+ */
 const sendData = function (res, format, modelName, status) {
   return function (model, cb) {
     if (format === 'json-api') {
@@ -47,7 +67,13 @@ const sendData = function (res, format, modelName, status) {
   };
 };
 
-const execQueryWithTotCount = function (query, countQuery) {
+/**
+ * @todo Write the documentation.
+ * 
+ * @param {Function} query - The query function
+ * @param {Function} countQuery - The query function
+ */
+const execQueryWithCountDocuments = function (query, countQuery) {
   return function (cb) {
     async.parallel({
       models: function (callback) {
@@ -69,12 +95,24 @@ const execQueryWithTotCount = function (query, countQuery) {
   };
 };
 
+/**
+ * @todo Write the documentation.
+ * 
+ * @param {Function} query - The query function
+ */
 const execQuery = function (query) {
   return function (cb) {
     query.exec(cb);
   };
 };
 
+/**
+ * @todo Write the documentation.
+ * 
+ * @param {Object} req - The req object
+ * @param {Object} model - The model object
+ * @param {Function} beforeSave - The beforeSave function
+ */
 const execBeforeSave = function (req, model, beforeSave) {
   if (!beforeSave) {
     beforeSave = function (req, model, cb) {
@@ -107,10 +145,10 @@ const execSave = function (model) {
  * If PATCH: use the baseUrl + req.url
  * If POST: use the baseUrl + req.url and append model._id
  *
- * @param {Object} req Required. The request object including the req.url parameter
- * @param {Object} res Required. The response object to set the header attribute at
- * @param {Boolean} isNewResource Required. Tells if the resource is new (true, POST) or old (false, PATCH)
- * @param {String} baseUrl Optional. The base URL to prefix with
+ * @param {Object} req - The request object including the req.url parameter
+ * @param {Object} res - The response object to set the header attribute at
+ * @param {Boolean} isNewResource - Tells if the resource is new (true, POST) or old (false, PATCH)
+ * @param {String} [baseUrl] - The base URL to prefix with
  */
 const setLocationHeader = function (req, res, isNewResource, baseUrl) {
   return function (model, cb) {
@@ -122,7 +160,12 @@ const setLocationHeader = function (req, res, isNewResource, baseUrl) {
     cb(null, model);
   };
 };
-
+/**
+ * @todo Write the documentation.
+ * 
+ * @param {Object} req - The request object
+ * @param {Function} projection - The projection function
+ */
 const buildProjections = function (req, projection) {
   return function (models, cb) {
     const iterator = function (model, cb) {
@@ -133,6 +176,13 @@ const buildProjections = function (req, projection) {
   };
 };
 
+/**
+ * @todo Write the documentaion.
+ * 
+ * @param {Object} req - The request object
+ * @param {Function} projection - The projection function
+ * @returns {Function}
+ */
 const buildProjection = function (req, projection) {
   return function (model, cb) {
     if (!model) {
@@ -284,7 +334,7 @@ Resource.prototype.query = function (options) {
     query.limit(pageSize + 1);
 
     async.waterfall([
-      execQueryWithTotCount(query, countQuery),
+      execQueryWithCountDocuments(query, countQuery),
       applyPageLinks(req, res, page, pageSize, options.baseUrl),
       applyTotalCount(res),
       buildProjections(req, options.projection),
